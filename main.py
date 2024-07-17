@@ -1,4 +1,4 @@
-# Mad Libs Game - Iteration 2
+import re
 
 # Define multiple story templates
 templates = {
@@ -16,35 +16,60 @@ Quickly, they {verb2} to {noun3}, only to discover a hidden {noun4}.
 """
 }
 
-# Prompt the user to choose a template
-print("Choose a story template:")
-for key in templates:
-    print(f"- {key}")
+# Function to validate user input
+def validate_input(prompt, word_type):
+    while True:
+        user_input = input(prompt)
+        if word_type == "noun" and re.match(r'^[a-zA-Z]+$', user_input):
+            return user_input
+        elif word_type == "verb" and re.match(r'^[a-zA-Z]+$', user_input):
+            return user_input
+        elif word_type == "adjective" and re.match(r'^[a-zA-Z]+$', user_input):
+            return user_input
+        else:
+            print(f"Invalid input. Please enter a {word_type} (only letters allowed).")
 
-chosen_template = input("Enter the name of the template you want to use: ")
+# Function to get user inputs for the story
+def get_inputs():
+    inputs = {
+        "noun1": validate_input("Enter a noun: ", "noun"),
+        "verb1": validate_input("Enter a verb: ", "verb"),
+        "verb2": validate_input("Enter another verb: ", "verb"),
+        "noun2": validate_input("Enter another noun: ", "noun"),
+        "noun3": validate_input("Enter another noun: ", "noun"),
+        "adjective1": validate_input("Enter an adjective: ", "adjective"),
+        "noun4": validate_input("Enter another noun: ", "noun")
+    }
+    return inputs
 
-# Ensure the chosen template exists
-if chosen_template not in templates:
-    print("Invalid template choice. Using 'Adventure' template by default.")
-    chosen_template = "Adventure"
+# Function to choose a template
+def choose_template():
+    print("Choose a story template:")
+    for key in templates:
+        print(f"- {key}")
+    chosen_template = input("Enter the name of the template you want to use: ")
+    if chosen_template not in templates:
+        print("Invalid template choice. Using 'Adventure' template by default.")
+        chosen_template = "Adventure"
+    return templates[chosen_template]
 
-# Get the selected template
-story_template = templates[chosen_template]
+# Function to play a round of Mad Libs
+def play_mad_libs():
+    story_template = choose_template()
+    inputs = get_inputs()
+    story = story_template.format(**inputs)
+    print("\nHere is your Mad Libs story:")
+    print(story)
 
-# Prompt the user for inputs based on the chosen template
-inputs = {
-    "noun1": input("Enter a noun: "),
-    "verb1": input("Enter a verb: "),
-    "verb2": input("Enter another verb: "),
-    "noun2": input("Enter another noun: "),
-    "noun3": input("Enter another noun: "),
-    "adjective1": input("Enter an adjective: "),
-    "noun4": input("Enter another noun: ")
-}
+# Main loop to allow multiple rounds
+def main():
+    while True:
+        play_mad_libs()
+        play_again = input("\nDo you want to play again? (yes/no): ").strip().lower()
+        if play_again != 'yes':
+            print("Thanks for playing Mad Libs! Goodbye!")
+            break
 
-# Fill in the story template with user inputs
-story = story_template.format(**inputs)
-
-# Display the story
-print("\nHere is your Mad Libs story:")
-print(story)
+# Run the game
+if __name__ == "__main__":
+    main()
