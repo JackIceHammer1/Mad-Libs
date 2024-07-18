@@ -172,17 +172,21 @@ def display_menu():
     print("6. View Favorite Templates")
     print("7. Delete Saved Story")
     print("8. View Leaderboard")
-    print("9. View User Statistics")
-    print("10. Update Profile Information")
-    print("11. View Profile Details")
-    print("12. Change Password")
-    print("13. Delete User Profile")
-    print("14. View Badges")
-    print("15. Create Challenge")  # New option
-    print("16. Participate in Challenge")  # New option
-    print("17. View Challenge Submissions")  # New option
-    print("18. Help")
-    print("19. Exit")
+    print("9. Help")
+    print("10. Participate in Challenge")
+    print("11. Vote on Challenge")
+    print("12. View Challenge Results")
+    print("13. Join Tournament")
+    print("14. Participate in Tournament Round")
+    print("15. Vote on Tournament Round")
+    print("16. Advance Tournament Round")
+    print("17. Start Tournament Round")
+    print("18. Create Storybook")
+    print("19. Add Story to Storybook")
+    print("20. View Storybooks")
+    print("21. Delete Storybook")
+    print("22. Delete Story from Storybook")
+    print("23. Exit")
 
 # Function to create a custom template
 def create_custom_template(username):
@@ -538,6 +542,93 @@ def view_user_badges(username):
     else:
         print("No badges earned yet. Start playing and creating to earn badges!")
 
+storybooks = {}
+
+# Function to create a new storybook
+def create_storybook(username):
+    storybook_name = input("Enter a name for your storybook: ").strip()
+    if username not in storybooks:
+        storybooks[username] = {}
+    if storybook_name in storybooks[username]:
+        print("You already have a storybook with this name.")
+    else:
+        storybooks[username][storybook_name] = []
+        print(f"Storybook '{storybook_name}' created successfully.")
+
+# Function to add a story to a storybook
+def add_story_to_storybook(username):
+    if username not in storybooks or not storybooks[username]:
+        print("You don't have any storybooks yet. Create one first.")
+        return
+    storybook_name = input("Enter the name of the storybook you want to add a story to: ").strip()
+    if storybook_name not in storybooks[username]:
+        print("Storybook not found. Please check the name and try again.")
+        return
+    view_saved_stories(username)
+    story_index = int(input("Enter the number of the story you want to add to the storybook: ")) - 1
+    user_stories = users_data.get(username, {}).get("stories", [])
+    if 0 <= story_index < len(user_stories):
+        storybooks[username][storybook_name].append(user_stories[story_index])
+        print(f"Story added to storybook '{storybook_name}' successfully.")
+    else:
+        print("Invalid story number.")
+
+# Function to view storybooks
+def view_storybooks(username):
+    if username not in storybooks or not storybooks[username]:
+        print("You don't have any storybooks yet.")
+    else:
+        for storybook_name, stories in storybooks[username].items():
+            print(f"\nStorybook: {storybook_name}")
+            for i, story in enumerate(stories, 1):
+                print(f"\nStory {i}:\n{story}\n")
+
+# Function to delete a storybook
+def delete_storybook(username):
+    if username not in storybooks or not storybooks[username]:
+        print("You don't have any storybooks yet.")
+        return
+    storybook_name = input("Enter the name of the storybook you want to delete: ").strip()
+    if storybook_name in storybooks[username]:
+        del storybooks[username][storybook_name]
+        print(f"Storybook '{storybook_name}' deleted successfully.")
+    else:
+        print("Storybook not found. Please check the name and try again.")
+
+# Function to delete a story from a storybook
+def delete_story_from_storybook(username):
+    if username not in storybooks or not storybooks[username]:
+        print("You don't have any storybooks yet.")
+        return
+    storybook_name = input("Enter the name of the storybook you want to remove a story from: ").strip()
+    if storybook_name not in storybooks[username]:
+        print("Storybook not found. Please check the name and try again.")
+        return
+    stories = storybooks[username][storybook_name]
+    for i, story in enumerate(stories, 1):
+        print(f"\nStory {i}:\n{story}\n")
+    story_index = int(input("Enter the number of the story you want to remove: ")) - 1
+    if 0 <= story_index < len(stories):
+        del stories[story_index]
+        print(f"Story removed from storybook '{storybook_name}' successfully.")
+    else:
+        print("Invalid story number.")
+
+# Function to save storybooks to a file
+def save_storybooks():
+    with open("storybooks.json", "w") as file:
+        json.dump(storybooks, file, indent=4)
+
+# Function to load storybooks from a file
+def load_storybooks():
+    global storybooks
+    if os.path.exists("storybooks.json"):
+        with open("storybooks.json", "r") as file:
+            storybooks = json.load(file)
+
+# Load storybooks when the script starts
+load_storybooks()
+
 # Main loop to allow multiple rounds
 def main():
     username = get_user_profile()
@@ -561,30 +652,39 @@ def main():
         elif choice == '8':
             view_leaderboard()
         elif choice == '9':
-            view_user_statistics(username)
-        elif choice == '10':
-            update_user_profile(username)
-        elif choice == '11':
-            view_user_profile(username)
-        elif choice == '12':
-            change_password(username)
-        elif choice == '13':
-            delete_user_profile(username)
-        elif choice == '14':
-            view_user_badges(username)
-        elif choice == '15':
-            create_challenge(username)
-        elif choice == '16':
-            participate_in_challenge(username)
-        elif choice == '17':
-            view_challenge_submissions()
-        elif choice == '18':
             display_help()
+        elif choice == '10':
+            participate_in_challenge(username)
+        elif choice == '11':
+            vote_on_challenge(username)
+        elif choice == '12':
+            display_challenge_results()
+        elif choice == '13':
+            join_tournament(username)
+        elif choice == '14':
+            participate_in_tournament(username)
+        elif choice == '15':
+            vote_on_tournament_round(username)
+        elif choice == '16':
+            advance_tournament_round()
+        elif choice == '17':
+            start_tournament_round()
+        elif choice == '18':
+            create_storybook(username)
         elif choice == '19':
+            add_story_to_storybook(username)
+        elif choice == '20':
+            view_storybooks(username)
+        elif choice == '21':
+            delete_storybook(username)
+        elif choice == '22':
+            delete_story_from_storybook(username)
+        elif choice == '23':
             print("Thanks for playing Mad Libs! Goodbye!")
+            save_storybooks()
             break
         else:
-            print("Invalid choice. Please enter a number between 1 and 19.")
+            print("Invalid choice. Please enter a number between 1 and 23.")
 
 # Run the game
 if __name__ == "__main__":
