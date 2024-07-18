@@ -1,5 +1,3 @@
-# Mad Libs Game - Iteration 5
-
 import re
 import random
 import json
@@ -9,15 +7,15 @@ import os
 templates = {
     "Adventure": """
 Once upon a time, there was a {noun1} who loved to {verb1}. Every day, they would {verb2} with their {noun2} and enjoy {noun3}. 
-One day, a {adjective1} {noun4} appeared and changed everything!
+One day, a {adjective1} {noun4} appeared and changed everything! The {noun4} was {adjective2} and had the power to {verb3}.
 """,
     "Sci-Fi": """
 In the distant future, a {adjective1} {noun1} discovered a way to {verb1} through space. Using their {noun2}, they {verb2} to {noun3}. 
-Suddenly, they encountered a {noun4} that threatened the mission.
+Suddenly, they encountered a {noun4} that threatened the mission. The {noun4} was {adjective2} and demanded that they {verb3} immediately.
 """,
     "Mystery": """
 It was a dark and stormy night when a {noun1} heard a {adjective1} noise. They decided to {verb1} and found a {noun2} lying on the ground. 
-Quickly, they {verb2} to {noun3}, only to discover a hidden {noun4}.
+Quickly, they {verb2} to {noun3}, only to discover a hidden {noun4}. The {noun4} contained a {adjective2} clue that revealed how to {verb3}.
 """
 }
 
@@ -130,8 +128,10 @@ def display_menu():
     print("2. View Templates")
     print("3. View Saved Stories")
     print("4. Create Custom Template")
-    print("5. Help")
-    print("6. Exit")
+    print("5. Mark Template as Favorite")
+    print("6. View Favorite Templates")
+    print("7. Help")
+    print("8. Exit")
 
 # Function to create a custom template
 def create_custom_template(username):
@@ -145,11 +145,37 @@ def create_custom_template(username):
     save_user_data(users_data)
     print("Custom template created successfully!")
 
+# Function to mark a template as favorite
+def mark_template_as_favorite(username):
+    display_templates()
+    favorite_template = input("Enter the name of the template you want to mark as favorite: ")
+    if favorite_template in templates:
+        user_favorites = users_data.get(username, {}).get("favorites", [])
+        if favorite_template not in user_favorites:
+            user_favorites.append(favorite_template)
+            users_data[username]["favorites"] = user_favorites
+            save_user_data(users_data)
+            print(f"Template '{favorite_template}' marked as favorite.")
+        else:
+            print("Template is already marked as favorite.")
+    else:
+        print("Invalid template choice.")
+
+# Function to view favorite templates
+def view_favorite_templates(username):
+    user_favorites = users_data.get(username, {}).get("favorites", [])
+    if user_favorites:
+        print("\nFavorite Templates:\n")
+        for template in user_favorites:
+            print(f"- {template}: {template_descriptions.get(template, 'No description available')}")
+    else:
+        print("No favorite templates yet.")
+
 # Function to get or create a user profile
 def get_user_profile():
     username = input("Enter your username: ").strip()
     if username not in users_data:
-        users_data[username] = {"stories": [], "templates": {}}
+        users_data[username] = {"stories": [], "templates": {}, "favorites": []}
         save_user_data(users_data)
         print(f"Welcome, {username}! Your profile has been created.")
     else:
@@ -171,12 +197,16 @@ def main():
         elif choice == '4':
             create_custom_template(username)
         elif choice == '5':
-            display_help()
+            mark_template_as_favorite(username)
         elif choice == '6':
+            view_favorite_templates(username)
+        elif choice == '7':
+            display_help()
+        elif choice == '8':
             print("Thanks for playing Mad Libs! Goodbye!")
             break
         else:
-            print("Invalid choice. Please enter 1, 2, 3, 4, 5, or 6.")
+            print("Invalid choice. Please enter a number between 1 and 8.")
 
 # Run the game
 if __name__ == "__main__":
