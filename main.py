@@ -127,6 +127,7 @@ def play_mad_libs(username):
     share_option = input("\nDo you want to share this story? (yes/no): ").strip().lower()
     if share_option == 'yes':
         share_story(username, story)
+    check_and_award_badges(username)
 
 # Load challenges
 challenges_file = "challenges.json"
@@ -195,7 +196,7 @@ def create_custom_template(username):
     save_user_data(users_data)
     print("Custom template created successfully!")
     update_user_points(username, 20)
-    update_user_badges(username)  # Update badges
+    check_and_award_badges(username)
 
 # Function to mark a template as favorite
 def mark_template_as_favorite(username):
@@ -208,7 +209,7 @@ def mark_template_as_favorite(username):
             users_data[username]["favorites"] = user_favorites
             save_user_data(users_data)
             print(f"Template '{favorite_template}' marked as favorite.")
-            update_user_badges(username)  # Update badges
+            check_and_award_badges(username)
         else:
             print("Template is already marked as favorite.")
     else:
@@ -396,7 +397,10 @@ def participate_in_challenge(username):
         submission = story_template.format(**inputs)
         challenges[challenge_name]["submissions"].append({"username": username, "story": submission})
         print("\nThank you for participating in the challenge! Your submission has been saved.")
+        user_data = users_data[username]
+        user_data["challenges_participated"] = user_data.get("challenges_participated", []) + [challenge_name]
         save_user_data(users_data)
+        check_and_award_badges(username)
     else:
         print("Challenge not found. Please check the challenge name and try again.")
 
@@ -413,6 +417,51 @@ def view_challenge_submissions():
             print("No submissions for this challenge yet.")
     else:
         print("Challenge not found. Please check the challenge name and try again.")
+
+# Define badges and their criteria
+badges = {
+    "Story Creator": {
+        "description": "Create 5 stories.",
+        "criteria": lambda data: len(data.get("stories", [])) >= 5
+    },
+    "Challenge Participant": {
+        "description": "Participate in 3 challenges.",
+        "criteria": lambda data: len(data.get("challenges_participated", [])) >= 3
+    },
+    "Template Creator": {
+        "description": "Create 3 custom templates.",
+        "criteria": lambda data: len(data.get("templates", {})) >= 3
+    },
+    "Favorite Collector": {
+        "description": "Mark 5 templates as favorite.",
+        "criteria": lambda data: len(data.get("favorites", [])) >= 5
+    },
+    "Story Saver": {
+        "description": "Save 10 stories.",
+        "criteria": lambda data: len(data.get("stories", [])) >= 10
+    }
+}
+
+# Function to check and award badges
+def check_and_award_badges(username):
+    user_data = users_data[username]
+    awarded_badges = user_data.get("badges", [])
+    for badge, info in badges.items():
+        if badge not in awarded_badges and info["criteria"](user_data):
+            awarded_badges.append(badge)
+            print(f"Congratulations {username}! You have earned the '{badge}' badge: {info['description']}")
+    user_data["badges"] = awarded_badges
+    save_user_data(users_data)
+
+# Function to view earned badges
+def view_user_badges(username):
+    user_badges = users_data.get(username, {}).get("badges", [])
+    if user_badges:
+        print("\nYour Earned Badges:\n")
+        for badge in user_badges:
+            print(f"- {badge}: {badges[badge]['description']}")
+    else:
+        print("No badges earned yet. Start playing and creating to earn badges!")
 
 # Main loop to allow multiple rounds
 def main():
