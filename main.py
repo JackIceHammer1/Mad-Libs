@@ -44,10 +44,12 @@ def load_user_data():
             return json.load(file)
     return {}
 
-# Function to save user data
+# Function to save user datadef save_user_data(data):
 def save_user_data(data):
     with open(users_data_file, "w") as file:
         json.dump(data, file, indent=4)
+    with open(challenges_file, "w") as file:
+        json.dump(challenges, file, indent=4)
 
 # Load user data
 users_data = load_user_data()
@@ -126,6 +128,17 @@ def play_mad_libs(username):
     if share_option == 'yes':
         share_story(username, story)
 
+# Load challenges
+challenges_file = "challenges.json"
+def load_challenges():
+    if os.path.exists(challenges_file):
+        with open(challenges_file, "r") as file:
+            return json.load(file)
+    return {}
+
+# Load challenges data
+challenges = load_challenges()
+
 # Function to display help
 def display_help():
     print("\nMad Libs Game Help:")
@@ -142,7 +155,10 @@ def display_help():
     print("11. View your profile details including points and saved items.")
     print("12. Change your profile password.")
     print("13. Delete your profile if you no longer want to play.")
-    print("14. View your earned badges and their criteria."
+    print("14. View your earned badges and their criteria.")
+    print("15. Create a challenge for others to participate in.")  # Updated help text
+    print("16. Participate in an existing challenge.")  # Updated help text
+    print("17. View submissions for a challenge.")  # Updated help text
 
 # Function to display the main menu
 def display_menu():
@@ -160,9 +176,12 @@ def display_menu():
     print("11. View Profile Details")
     print("12. Change Password")
     print("13. Delete User Profile")
-    print("14. View Badges")  # New option
-    print("15. Help")
-    print("16. Exit")
+    print("14. View Badges")
+    print("15. Create Challenge")  # New option
+    print("16. Participate in Challenge")  # New option
+    print("17. View Challenge Submissions")  # New option
+    print("18. Help")
+    print("19. Exit")
 
 # Function to create a custom template
 def create_custom_template(username):
@@ -358,6 +377,43 @@ def view_user_badges(username):
     else:
         print("No badges earned yet.")
 
+# Function to create a challenge
+def create_challenge(username):
+    story_template = choose_template()
+    challenge_name = input("Enter a name for your challenge: ")
+    inputs = get_inputs(story_template)
+    challenge_story = story_template.format(**inputs)
+    challenges[challenge_name] = {"template": story_template, "creator": username, "submissions": []}
+    print("\nYour challenge has been created! Share the challenge name with others so they can participate.")
+    save_user_data(users_data)
+
+# Function to participate in a challenge
+def participate_in_challenge(username):
+    challenge_name = input("Enter the name of the challenge you want to participate in: ")
+    if challenge_name in challenges:
+        story_template = challenges[challenge_name]["template"]
+        inputs = get_inputs(story_template)
+        submission = story_template.format(**inputs)
+        challenges[challenge_name]["submissions"].append({"username": username, "story": submission})
+        print("\nThank you for participating in the challenge! Your submission has been saved.")
+        save_user_data(users_data)
+    else:
+        print("Challenge not found. Please check the challenge name and try again.")
+
+# Function to view challenge submissions
+def view_challenge_submissions():
+    challenge_name = input("Enter the name of the challenge you want to view: ")
+    if challenge_name in challenges:
+        submissions = challenges[challenge_name]["submissions"]
+        if submissions:
+            print(f"\nSubmissions for challenge '{challenge_name}':")
+            for submission in submissions:
+                print(f"\nBy {submission['username']}:\n{submission['story']}\n")
+        else:
+            print("No submissions for this challenge yet.")
+    else:
+        print("Challenge not found. Please check the challenge name and try again.")
+
 # Main loop to allow multiple rounds
 def main():
     username = get_user_profile()
@@ -393,12 +449,18 @@ def main():
         elif choice == '14':
             view_user_badges(username)
         elif choice == '15':
-            display_help()
+            create_challenge(username)
         elif choice == '16':
+            participate_in_challenge(username)
+        elif choice == '17':
+            view_challenge_submissions()
+        elif choice == '18':
+            display_help()
+        elif choice == '19':
             print("Thanks for playing Mad Libs! Goodbye!")
             break
         else:
-            print("Invalid choice. Please enter a number between 1 and 16.")
+            print("Invalid choice. Please enter a number between 1 and 19.")
 
 # Run the game
 if __name__ == "__main__":
