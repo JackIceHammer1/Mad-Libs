@@ -100,6 +100,7 @@ def save_story(username, story):
     save_user_data(users_data)
     print("Story saved successfully!")
     update_user_points(username, 10)
+    update_user_badges(username)  # Update badges
 
 # Function to view saved stories
 def view_saved_stories(username):
@@ -136,8 +137,12 @@ def display_help():
     print("6. User profiles are created to save stories and favorite templates.")
     print("7. You can share your stories by exporting them to text files.")
     print("8. Earn points for saving stories and creating templates.")
-    print("9. View the leaderboard to see the top users.")
-    print("10. Edit and update your custom templates.")
+    print("9. View your statistics to see your activity and points earned.")
+    print("10. Update your profile information such as username and password.")
+    print("11. View your profile details including points and saved items.")
+    print("12. Change your profile password.")
+    print("13. Delete your profile if you no longer want to play.")
+    print("14. View your earned badges and their criteria."
 
 # Function to display the main menu
 def display_menu():
@@ -155,8 +160,9 @@ def display_menu():
     print("11. View Profile Details")
     print("12. Change Password")
     print("13. Delete User Profile")
-    print("14. Help")
-    print("15. Exit")
+    print("14. View Badges")  # New option
+    print("15. Help")
+    print("16. Exit")
 
 # Function to create a custom template
 def create_custom_template(username):
@@ -170,6 +176,7 @@ def create_custom_template(username):
     save_user_data(users_data)
     print("Custom template created successfully!")
     update_user_points(username, 20)
+    update_user_badges(username)  # Update badges
 
 # Function to mark a template as favorite
 def mark_template_as_favorite(username):
@@ -182,6 +189,7 @@ def mark_template_as_favorite(username):
             users_data[username]["favorites"] = user_favorites
             save_user_data(users_data)
             print(f"Template '{favorite_template}' marked as favorite.")
+            update_user_badges(username)  # Update badges
         else:
             print("Template is already marked as favorite.")
     else:
@@ -319,6 +327,37 @@ def delete_user_profile(username):
     else:
         print("Profile deletion cancelled.")
 
+# Function to update user badges
+def update_user_badges(username):
+    user_data = users_data[username]
+    badges = user_data.get("badges", [])
+    
+    # Check conditions for earning badges
+    if len(user_data.get("stories", [])) >= 5 and "Story Saver" not in badges:
+        badges.append("Story Saver")
+        print("Congratulations! You've earned the 'Story Saver' badge for saving 5 stories.")
+    
+    if len(user_data.get("templates", [])) >= 3 and "Template Creator" not in badges:
+        badges.append("Template Creator")
+        print("Congratulations! You've earned the 'Template Creator' badge for creating 3 custom templates.")
+    
+    if len(user_data.get("favorites", [])) >= 3 and "Favorite Collector" not in badges:
+        badges.append("Favorite Collector")
+        print("Congratulations! You've earned the 'Favorite Collector' badge for marking 3 templates as favorite.")
+    
+    user_data["badges"] = badges
+    save_user_data(users_data)
+
+# Function to view user badges
+def view_user_badges(username):
+    badges = users_data.get(username, {}).get("badges", [])
+    if badges:
+        print("\nYour Badges:")
+        for badge in badges:
+            print(f"- {badge}")
+    else:
+        print("No badges earned yet.")
+
 # Main loop to allow multiple rounds
 def main():
     username = get_user_profile()
@@ -352,12 +391,14 @@ def main():
         elif choice == '13':
             delete_user_profile(username)
         elif choice == '14':
-            display_help()
+            view_user_badges(username)
         elif choice == '15':
+            display_help()
+        elif choice == '16':
             print("Thanks for playing Mad Libs! Goodbye!")
             break
         else:
-            print("Invalid choice. Please enter a number between 1 and 15.")
+            print("Invalid choice. Please enter a number between 1 and 16.")
 
 # Run the game
 if __name__ == "__main__":
