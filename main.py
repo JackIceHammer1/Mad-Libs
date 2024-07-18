@@ -16,13 +16,23 @@ Suddenly, they encountered a {noun4} that threatened the mission. The {noun4} wa
     "Mystery": """
 It was a dark and stormy night when a {noun1} heard a {adjective1} noise. They decided to {verb1} and found a {noun2} lying on the ground. 
 Quickly, they {verb2} to {noun3}, only to discover a hidden {noun4}. The {noun4} contained a {adjective2} clue that revealed how to {verb3}.
+""",
+    "Fantasy": """
+In a magical land, a {adjective1} {noun1} found a {noun2} that could {verb1}. With the help of a {adjective2} {noun3}, they embarked on a quest to {verb2} the {noun4}. 
+After many adventures, they finally managed to {verb3} and restore peace to the kingdom.
+""",
+    "Horror": """
+On a spooky night, a {adjective1} {noun1} decided to {verb1} in the abandoned {noun2}. As they {verb2}, they heard a {adjective2} sound coming from the {noun3}. 
+Terrified, they tried to {verb3}, but the {noun4} blocked their path.
 """
 }
 
 template_descriptions = {
     "Adventure": "A story of excitement and daring experiences.",
     "Sci-Fi": "A futuristic tale of exploration and discovery.",
-    "Mystery": "A suspenseful narrative full of intrigue and surprises."
+    "Mystery": "A suspenseful narrative full of intrigue and surprises.",
+    "Fantasy": "A magical journey full of wonder and quests.",
+    "Horror": "A spine-chilling tale of fear and suspense."
 }
 
 users_data_file = "users_data.json"
@@ -89,6 +99,7 @@ def save_story(username, story):
     users_data[username]["stories"] = user_stories
     save_user_data(users_data)
     print("Story saved successfully!")
+    update_user_points(username, 10)
 
 # Function to view saved stories
 def view_saved_stories(username):
@@ -110,6 +121,9 @@ def play_mad_libs(username):
     save_option = input("\nDo you want to save this story? (yes/no): ").strip().lower()
     if save_option == 'yes':
         save_story(username, story)
+    share_option = input("\nDo you want to share this story? (yes/no): ").strip().lower()
+    if share_option == 'yes':
+        share_story(username, story)
 
 # Function to display help
 def display_help():
@@ -120,6 +134,9 @@ def display_help():
     print("4. Optionally, save your story to view later.")
     print("5. You can create custom templates and save them for later use.")
     print("6. User profiles are created to save stories and favorite templates.")
+    print("7. You can share your stories by exporting them to text files.")
+    print("8. Earn points for saving stories and creating templates.")
+    print("9. View the leaderboard to see the top users.")
 
 # Function to display the main menu
 def display_menu():
@@ -130,8 +147,10 @@ def display_menu():
     print("4. Create Custom Template")
     print("5. Mark Template as Favorite")
     print("6. View Favorite Templates")
-    print("7. Help")
-    print("8. Exit")
+    print("7. Delete Saved Story")
+    print("8. View Leaderboard")
+    print("9. Help")
+    print("10. Exit")
 
 # Function to create a custom template
 def create_custom_template(username):
@@ -144,6 +163,7 @@ def create_custom_template(username):
     users_data[username]["templates"] = user_templates
     save_user_data(users_data)
     print("Custom template created successfully!")
+    update_user_points(username, 20)
 
 # Function to mark a template as favorite
 def mark_template_as_favorite(username):
@@ -171,11 +191,50 @@ def view_favorite_templates(username):
     else:
         print("No favorite templates yet.")
 
+# Function to share a story by exporting it to a text file
+def share_story(username, story):
+    filename = f"{username}_story_{len(users_data[username]['stories'])}.txt"
+    with open(filename, "w") as file:
+        file.write(story)
+    print(f"Story exported successfully to {filename}")
+
+# Function to update user points
+def update_user_points(username, points):
+    current_points = users_data.get(username, {}).get("points", 0)
+    users_data[username]["points"] = current_points + points
+    save_user_data(users_data)
+    print(f"You have earned {points} points! Total points: {users_data[username]['points']}")
+
+# Function to view the leaderboard
+def view_leaderboard():
+    leaderboard = sorted(users_data.items(), key=lambda x: x[1].get("points", 0), reverse=True)
+    print("\nLeaderboard:\n")
+    for i, (username, data) in enumerate(leaderboard, 1):
+        print(f"{i}. {username} - {data.get('points', 0)} points")
+
+# Function to delete a saved story
+def delete_saved_story(username):
+    user_stories = users_data.get(username, {}).get("stories", [])
+    if user_stories:
+        print("\nSaved Stories:\n")
+        for i, story in enumerate(user_stories, 1):
+            print(f"Story {i}:\n{story}\n")
+        story_index = int(input("Enter the number of the story you want to delete: ")) - 1
+        if 0 <= story_index < len(user_stories):
+            del user_stories[story_index]
+            users_data[username]["stories"] = user_stories
+            save_user_data(users_data)
+            print("Story deleted successfully.")
+        else:
+            print("Invalid story number.")
+    else:
+        print("No stories saved yet.")
+
 # Function to get or create a user profile
 def get_user_profile():
     username = input("Enter your username: ").strip()
     if username not in users_data:
-        users_data[username] = {"stories": [], "templates": {}, "favorites": []}
+        users_data[username] = {"stories": [], "templates": {}, "favorites": [], "points": 0}
         save_user_data(users_data)
         print(f"Welcome, {username}! Your profile has been created.")
     else:
@@ -201,12 +260,16 @@ def main():
         elif choice == '6':
             view_favorite_templates(username)
         elif choice == '7':
-            display_help()
+            delete_saved_story(username)
         elif choice == '8':
+            view_leaderboard()
+        elif choice == '9':
+            display_help()
+        elif choice == '10':
             print("Thanks for playing Mad Libs! Goodbye!")
             break
         else:
-            print("Invalid choice. Please enter a number between 1 and 8.")
+            print("Invalid choice. Please enter a number between 1 and 10.")
 
 # Run the game
 if __name__ == "__main__":
