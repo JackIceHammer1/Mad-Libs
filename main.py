@@ -137,6 +137,7 @@ def display_help():
     print("7. You can share your stories by exporting them to text files.")
     print("8. Earn points for saving stories and creating templates.")
     print("9. View the leaderboard to see the top users.")
+    print("10. Edit and update your custom templates.")
 
 # Function to display the main menu
 def display_menu():
@@ -230,6 +231,26 @@ def delete_saved_story(username):
     else:
         print("No stories saved yet.")
 
+# Function to edit a custom template
+def edit_custom_template(username):
+    user_templates = users_data.get(username, {}).get("templates", {})
+    if user_templates:
+        print("\nYour Custom Templates:\n")
+        for template in user_templates:
+            print(f"- {template}")
+        template_name = input("\nEnter the name of the template you want to edit: ")
+        if template_name in user_templates:
+            new_template_content = input(f"Enter the updated content for '{template_name}' template: ")
+            templates[template_name] = new_template_content
+            user_templates[template_name] = new_template_content
+            users_data[username]["templates"] = user_templates
+            save_user_data(users_data)
+            print(f"Template '{template_name}' updated successfully.")
+        else:
+            print("Template not found.")
+    else:
+        print("No custom templates created yet.")
+
 # Function to get or create a user profile
 def get_user_profile():
     username = input("Enter your username: ").strip()
@@ -240,6 +261,20 @@ def get_user_profile():
     else:
         print(f"Welcome back, {username}!")
     return username
+
+# Function to view user statistics
+def view_user_statistics(username):
+    user_data = users_data.get(username, {})
+    total_stories_saved = len(user_data.get("stories", []))
+    total_templates_created = len(user_data.get("templates", []))
+    total_points = user_data.get("points", 0)
+    total_favorites = len(user_data.get("favorites", []))
+
+    print("\nUser Statistics:")
+    print(f"Total Stories Saved: {total_stories_saved}")
+    print(f"Total Templates Created: {total_templates_created}")
+    print(f"Total Favorite Templates: {total_favorites}")
+    print(f"Total Points Earned: {total_points}"
 
 # Main loop to allow multiple rounds
 def main():
