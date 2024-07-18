@@ -629,6 +629,87 @@ def load_storybooks():
 # Load storybooks when the script starts
 load_storybooks()
 
+shared_stories = {}
+
+# Function to share a story
+def share_story_with_feedback(username):
+    view_saved_stories(username)
+    story_index = int(input("Enter the number of the story you want to share: ")) - 1
+    user_stories = users_data.get(username, {}).get("stories", [])
+    if 0 <= story_index < len(user_stories):
+        story = user_stories[story_index]
+        shared_story_id = len(shared_stories) + 1
+        shared_stories[shared_story_id] = {
+            "username": username,
+            "story": story,
+            "ratings": [],
+            "comments": []
+        }
+        print(f"Story shared successfully with ID: {shared_story_id}")
+    else:
+        print("Invalid story number.")
+
+# Function to view shared stories
+def view_shared_stories():
+    if not shared_stories:
+        print("No stories have been shared yet.")
+        return
+    for story_id, story_data in shared_stories.items():
+        print(f"\nStory ID: {story_id}")
+        print(f"Shared by: {story_data['username']}")
+        print(f"Story:\n{story_data['story']}")
+        if story_data['ratings']:
+            average_rating = sum(story_data['ratings']) / len(story_data['ratings'])
+            print(f"Average Rating: {average_rating:.2f}")
+        else:
+            print("No ratings yet.")
+        if story_data['comments']:
+            print("Comments:")
+            for comment in story_data['comments']:
+                print(f"- {comment}")
+        else:
+            print("No comments yet.")
+
+# Function to rate a shared story
+def rate_shared_story():
+    view_shared_stories()
+    story_id = int(input("Enter the ID of the story you want to rate: "))
+    if story_id in shared_stories:
+        rating = int(input("Enter your rating (1-5): "))
+        if 1 <= rating <= 5:
+            shared_stories[story_id]['ratings'].append(rating)
+            print("Rating submitted successfully.")
+        else:
+            print("Invalid rating. Please enter a number between 1 and 5.")
+    else:
+        print("Invalid story ID.")
+
+# Function to comment on a shared story
+def comment_on_shared_story():
+    view_shared_stories()
+    story_id = int(input("Enter the ID of the story you want to comment on: "))
+    if story_id in shared_stories:
+        comment = input("Enter your comment: ").strip()
+        shared_stories[story_id]['comments'].append(comment)
+        print("Comment submitted successfully.")
+    else:
+        print("Invalid story ID.")
+
+# Function to save shared stories to a file
+def save_shared_stories():
+    with open("shared_stories.json", "w") as file:
+        json.dump(shared_stories, file, indent=4)
+
+# Function to load shared stories from a file
+def load_shared_stories():
+    global shared_stories
+    if os.path.exists("shared_stories.json"):
+        with open("shared_stories.json", "r") as file:
+            shared_stories = json.load(file)
+
+# Load shared stories when the script starts
+load_shared_stories()
+
 # Main loop to allow multiple rounds
 def main():
     username = get_user_profile()
