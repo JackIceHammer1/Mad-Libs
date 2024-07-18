@@ -150,8 +150,13 @@ def display_menu():
     print("6. View Favorite Templates")
     print("7. Delete Saved Story")
     print("8. View Leaderboard")
-    print("9. Help")
-    print("10. Exit")
+    print("9. View User Statistics")
+    print("10. Update Profile Information")
+    print("11. View Profile Details")
+    print("12. Change Password")
+    print("13. Delete User Profile")
+    print("14. Help")
+    print("15. Exit")
 
 # Function to create a custom template
 def create_custom_template(username):
@@ -276,6 +281,44 @@ def view_user_statistics(username):
     print(f"Total Favorite Templates: {total_favorites}")
     print(f"Total Points Earned: {total_points}"
 
+# Function to update user profile information
+def update_user_profile(username):
+    print("\nUpdate Profile Information:")
+    new_username = input("Enter new username (press Enter to keep current): ").strip()
+    if new_username:
+        users_data[new_username] = users_data.pop(username)
+        username = new_username
+    new_password = input("Enter new password (press Enter to keep current): ").strip()
+    if new_password:
+        users_data[username]["password"] = new_password
+    print("Profile updated successfully!")
+
+# Function to view user profile details
+def view_user_profile(username):
+    print(f"\nUser Profile Details for '{username}':")
+    print(f"Username: {username}")
+    print(f"Points: {users_data[username].get('points', 0)}")
+    print(f"Number of Stories Saved: {len(users_data[username].get('stories', []))}")
+    print(f"Number of Custom Templates Created: {len(users_data[username].get('templates', []))}")
+    print(f"Number of Favorite Templates: {len(users_data[username].get('favorites', []))}")
+
+# Function to change user password
+def change_password(username):
+    new_password = input("Enter new password: ").strip()
+    users_data[username]["password"] = new_password
+    print("Password changed successfully!")
+
+# Function to delete user profile
+def delete_user_profile(username):
+    confirm = input("Are you sure you want to delete your profile? This action cannot be undone. (yes/no): ").strip().lower()
+    if confirm == "yes":
+        del users_data[username]
+        save_user_data(users_data)
+        print("Profile deleted successfully. Goodbye!")
+        exit()
+    else:
+        print("Profile deletion cancelled.")
+
 # Main loop to allow multiple rounds
 def main():
     username = get_user_profile()
@@ -299,12 +342,22 @@ def main():
         elif choice == '8':
             view_leaderboard()
         elif choice == '9':
-            display_help()
+            view_user_statistics(username)
         elif choice == '10':
+            update_user_profile(username)
+        elif choice == '11':
+            view_user_profile(username)
+        elif choice == '12':
+            change_password(username)
+        elif choice == '13':
+            delete_user_profile(username)
+        elif choice == '14':
+            display_help()
+        elif choice == '15':
             print("Thanks for playing Mad Libs! Goodbye!")
             break
         else:
-            print("Invalid choice. Please enter a number between 1 and 10.")
+            print("Invalid choice. Please enter a number between 1 and 15.")
 
 # Run the game
 if __name__ == "__main__":
