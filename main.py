@@ -232,6 +232,81 @@ def share_story(username, story):
         file.write(story)
     print(f"Story exported successfully to {filename}")
 
+challenges = {
+    "Epic Adventure": {
+        "template": templates["Adventure"],
+        "submissions": [],
+        "votes": {}
+    },
+    "Space Odyssey": {
+        "template": templates["Sci-Fi"],
+        "submissions": [],
+        "votes": {}
+    }
+}
+
+# Function to participate in a challenge
+def participate_in_challenge(username):
+    display_challenges()
+    challenge_name = input("Enter the name of the challenge you want to participate in: ")
+    if challenge_name in challenges:
+        story_template = challenges[challenge_name]["template"]
+        inputs = get_inputs(story_template)
+        submission = story_template.format(**inputs)
+        challenges[challenge_name]["submissions"].append({"username": username, "story": submission})
+        print("\nThank you for participating in the challenge! Your submission has been saved.")
+        user_data = users_data[username]
+        user_data["challenges_participated"] = user_data.get("challenges_participated", []) + [challenge_name]
+        save_user_data(users_data)
+    else:
+        print("Challenge not found. Please check the challenge name and try again.")
+
+# Function to display available challenges
+def display_challenges():
+    print("\nAvailable Challenges:")
+    for challenge in challenges:
+        print(f"- {challenge}: {template_descriptions.get(challenge, 'No description available')}")
+
+# Function to vote on challenge submissions
+def vote_on_challenge(username):
+    display_challenges()
+    challenge_name = input("Enter the name of the challenge you want to vote on: ")
+    if challenge_name in challenges:
+        submissions = challenges[challenge_name]["submissions"]
+        if not submissions:
+            print("No submissions for this challenge yet.")
+            return
+        print("\nSubmissions:")
+        for i, submission in enumerate(submissions, 1):
+            print(f"{i}. {submission['story']} (by {submission['username']})")
+        vote_index = int(input("Enter the number of the submission you want to vote for: ")) - 1
+        if 0 <= vote_index < len(submissions):
+            voted_username = submissions[vote_index]["username"]
+            if voted_username not in challenges[challenge_name]["votes"]:
+                challenges[challenge_name]["votes"][voted_username] = 0
+            challenges[challenge_name]["votes"][voted_username] += 1
+            print("Vote recorded successfully.")
+        else:
+            print("Invalid submission number.")
+    else:
+        print("Challenge not found. Please check the challenge name and try again.")
+
+# Function to display challenge results
+def display_challenge_results():
+    display_challenges()
+    challenge_name = input("Enter the name of the challenge you want to see results for: ")
+    if challenge_name in challenges:
+        votes = challenges[challenge_name]["votes"]
+        if not votes:
+            print("No votes for this challenge yet.")
+            return
+        sorted_votes = sorted(votes.items(), key=lambda x: x[1], reverse=True)
+        print("\nChallenge Results:")
+        for i, (username, vote_count) in enumerate(sorted_votes, 1):
+            print(f"{i}. {username}: {vote_count} votes")
+    else:
+        print("Challenge not found. Please check the challenge name and try again.")
+
 # Function to update user points
 def update_user_points(username, points):
     current_points = users_data.get(username, {}).get("points", 0)
