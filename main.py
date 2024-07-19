@@ -2,6 +2,28 @@ import re
 import random
 import json
 import os
+import datetime
+
+daily_challenge_data = {
+    "date": None,
+    "template": None,
+    "submissions": {}
+}
+
+# Function to save daily challenge data to a file
+def save_daily_challenge_data():
+    with open("daily_challenge.json", "w") as file:
+        json.dump(daily_challenge_data, file, indent=4)
+
+# Function to load daily challenge data from a file
+def load_daily_challenge_data():
+    global daily_challenge_data
+    if os.path.exists("daily_challenge.json"):
+        with open("daily_challenge.json", "r") as file:
+            daily_challenge_data = json.load(file)
+
+# Load daily challenge data when the script starts
+load_daily_challenge_data()
 
 # Define multiple story templates
 templates = {
@@ -709,6 +731,41 @@ def load_shared_stories():
 
 # Load shared stories when the script starts
 load_shared_stories()
+
+# Function to set up a new daily challenge
+def setup_daily_challenge():
+    current_date = str(datetime.date.today())
+    if daily_challenge_data["date"] != current_date:
+        daily_challenge_data["date"] = current_date
+        daily_challenge_data["template"] = random.choice(list(templates.keys()))
+        daily_challenge_data["submissions"] = {}
+        save_daily_challenge_data()
+        print(f"New Daily Challenge set up for {current_date} with template: {daily_challenge_data['template']}")
+    else:
+        print(f"Daily Challenge for {current_date} is already set up with template: {daily_challenge_data['template']}")
+
+# Function to participate in the daily challenge
+def participate_in_daily_challenge(username):
+    setup_daily_challenge()
+    template_name = daily_challenge_data["template"]
+    story_template = templates[template_name]
+    inputs = get_inputs(story_template)
+    story = story_template.format(**inputs)
+    print("\nHere is your Daily Challenge story:")
+    print(story)
+    daily_challenge_data["submissions"][username] = story
+    save_daily_challenge_data()
+    print("Story submitted for the Daily Challenge.")
+
+# Function to view daily challenge submissions
+def view_daily_challenge_submissions():
+    setup_daily_challenge()
+    if not daily_challenge_data["submissions"]:
+        print("No submissions for today's challenge yet.")
+        return
+    print("\nDaily Challenge Submissions:\n")
+    for username, story in daily_challenge_data["submissions"].items():
+        print(f"{username}'s submission:\n{story}\n")
 
 # Main loop to allow multiple rounds
 def main():
