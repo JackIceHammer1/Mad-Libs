@@ -4,6 +4,23 @@ import json
 import os
 import datetime
 
+tournament_data_file = "tournament_data.json"
+
+# Function to load tournament data
+def load_tournament_data():
+    if os.path.exists(tournament_data_file):
+        with open(tournament_data_file, "r") as file:
+            return json.load(file)
+    return {"current_template": "", "submissions": [], "votes": {}}
+
+# Function to save tournament data
+def save_tournament_data(data):
+    with open(tournament_data_file, "w") as file:
+        json.dump(data, file, indent=4)
+
+# Load tournament data
+tournament_data = load_tournament_data()
+
 daily_challenge_file = "daily_challenge.json"
 
 # Function to load daily challenge data
@@ -244,7 +261,13 @@ def display_menu():
     print("22. View Top Voted Stories")
     print("23. Set Daily Challenge")
     print("24. Clear Daily Challenge")
-    print("25. Exit")
+    print("25. Participate in Tournament")
+    print("26. View Tournament Submissions")
+    print("27. Vote for Tournament Story")
+    print("28. View Tournament Results")
+    print("29. Set Tournament Template")
+    print("30. Clear Tournament Data")
+    print("31. Exit")
 
 # Function to create a custom template
 def create_custom_template(username):
@@ -444,7 +467,7 @@ def view_user_statistics(username):
     print(f"Total Stories Saved: {total_stories_saved}")
     print(f"Total Templates Created: {total_templates_created}")
     print(f"Total Favorite Templates: {total_favorites}")
-    print(f"Total Points Earned: {total_points}"
+    print(f"Total Points Earned: {total_points}")
 
 # Function to update user profile information
 def update_user_profile(username):
@@ -899,6 +922,94 @@ def clear_daily_challenge():
     save_daily_challenge_data(daily_challenge_data)
     print("Daily challenge cleared successfully!")
 
+# Function to set the tournament template
+def set_tournament_template():
+    template = choose_template()
+    tournament_data["current_template"] = template
+    tournament_data["submissions"] = []
+    tournament_data["votes"] = {}
+    save_tournament_data(tournament_data)
+    print("Tournament template set successfully!")
+
+# Function to view the tournament template
+def view_tournament_template():
+    template = tournament_data["current_template"]
+    if template:
+        print("\nCurrent Tournament Template:")
+        print(template)
+    else:
+        print("No tournament template set.")
+
+# Function to submit a story for the tournament
+def submit_tournament_story(username):
+    template = tournament_data["current_template"]
+    if not template:
+        print("No tournament template set.")
+        return
+    inputs = get_inputs(template)
+    story = template.format(**inputs)
+    tournament_data["submissions"].append({"username": username, "story": story})
+    save_tournament_data(tournament_data)
+    print("Story submitted successfully!")
+
+# Function to view tournament submissions
+def view_tournament_submissions():
+    submissions = tournament_data["submissions"]
+    if not submissions:
+        print("No submissions yet.")
+        return
+    print("\nTournament Submissions:\n")
+    for i, submission in enumerate(submissions, 1):
+        print(f"{i}. Username: {submission['username']}")
+        print(f"Story:\n{submission['story']}\n")
+
+# Function to vote for a story
+def vote_for_tournament_story(username):
+    submissions = tournament_data["submissions"]
+    if not submissions:
+        print("No submissions to vote for.")
+        return
+    print("\nTournament Submissions:\n")
+    for i, submission in enumerate(submissions, 1):
+        print(f"{i}. Username: {submission['username']}")
+        print(f"Story:\n{submission['story']}\n")
+    story_index = int(input("Enter the number of the story you want to vote for: ")) - 1
+    if 0 <= story_index < len(submissions):
+        selected_story = submissions[story_index]
+        story_id = selected_story['username'] + str(story_index)
+        if username not in tournament_data["votes"]:
+            tournament_data["votes"][username] = story_id
+            save_tournament_data(tournament_data)
+            print("Vote submitted successfully!")
+        else:
+            print("You have already voted.")
+    else:
+        print("Invalid story number.")
+
+# Function to view tournament results
+def view_tournament_results():
+    votes = tournament_data["votes"]
+    if not votes:
+        print("No votes yet.")
+        return
+    vote_counts = {}
+    for vote in votes.values():
+        vote_counts[vote] = vote_counts.get(vote, 0) + 1
+    sorted_vote_counts = sorted(vote_counts.items(), key=lambda x: x[1], reverse=True)
+    print("\nTournament Results:\n")
+    for vote_id, count in sorted_vote_counts:
+        username, story_index = vote_id[:-1], int(vote_id[-1])
+        print(f"Username: {username} - Votes: {count}")
+        print(f"Story:\n{tournament_data['submissions'][story_index]['story']}\n")
+
+# Function to clear tournament data
+def clear_tournament():
+    tournament_data["current_template"] = ""
+    tournament_data["submissions"] = []
+    tournament_data["votes"] = {}
+    save_tournament_data(tournament_data)
+    print("Tournament data cleared successfully!")
+
 # Main loop to allow multiple rounds
 def main():
     username = get_user_profile()
@@ -954,13 +1065,26 @@ def main():
         elif choice == '24':
             clear_daily_challenge()
         elif choice == '25':
+            participate_in_tournament(username)
+        elif choice == '26':
+            view_tournament_submissions()
+        elif choice == '27':
+            vote_for_tournament_story(username)
+        elif choice == '28':
+            view_tournament_results()
+        elif choice == '29':
+            set_tournament_template()
+        elif choice == '30':
+            clear_tournament()
+        elif choice == '31':
             print("Thanks for playing Mad Libs! Goodbye!")
             save_storybooks()
             save_shared_stories()
             save_daily_challenge_data()
+            save_tournament_data()
             break
         else:
-            print("Invalid choice. Please enter a number between 1 and 25.")
+            print("Invalid choice. Please enter a number between 1 and 31.")
 
 # Run the game
 if __name__ == "__main__":
