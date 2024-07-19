@@ -25,6 +25,23 @@ def load_daily_challenge_data():
 # Load daily challenge data when the script starts
 load_daily_challenge_data()
 
+shared_stories_data_file = "shared_stories.json"
+
+# Function to load shared stories data
+def load_shared_stories_data():
+    if os.path.exists(shared_stories_data_file):
+        with open(shared_stories_data_file, "r") as file:
+            return json.load(file)
+    return {}
+
+# Function to save shared stories data
+def save_shared_stories_data(data):
+    with open(shared_stories_data_file, "w") as file:
+        json.dump(data, file, indent=4)
+
+# Load shared stories data
+shared_stories_data = load_shared_stories_data()
+
 # Define multiple story templates
 templates = {
     "Adventure": """
@@ -195,19 +212,19 @@ def display_menu():
     print("7. Delete Saved Story")
     print("8. View Leaderboard")
     print("9. Help")
-    print("10. Participate in Challenge")
-    print("11. Vote on Challenge")
-    print("12. View Challenge Results")
-    print("13. Join Tournament")
-    print("14. Participate in Tournament Round")
-    print("15. Vote on Tournament Round")
-    print("16. Advance Tournament Round")
-    print("17. Start Tournament Round")
-    print("18. Create Storybook")
-    print("19. Add Story to Storybook")
-    print("20. View Storybooks")
-    print("21. Delete Storybook")
-    print("22. Delete Story from Storybook")
+    print("10. Create Storybook")
+    print("11. Add Story to Storybook")
+    print("12. View Storybooks")
+    print("13. Delete Storybook")
+    print("14. Delete Story from Storybook")
+    print("15. Share Story")
+    print("16. View Shared Stories")
+    print("17. Rate Shared Story")
+    print("18. Comment on Shared Story")
+    print("19. Participate in Daily Challenge")
+    print("20. View Daily Challenge Submissions")
+    print("21. Vote for a Story")
+    print("22. View Top Voted Stories")
     print("23. Exit")
 
 # Function to create a custom template
@@ -767,6 +784,55 @@ def view_daily_challenge_submissions():
     for username, story in daily_challenge_data["submissions"].items():
         print(f"{username}'s submission:\n{story}\n")
 
+# Function to share a story
+def share_story(username, story):
+    story_id = len(shared_stories_data) + 1
+    shared_stories_data[story_id] = {
+        "username": username,
+        "story": story,
+        "votes": 0
+    }
+    save_shared_stories_data(shared_stories_data)
+    print("Story shared successfully!")
+
+# Function to view shared stories
+def view_shared_stories():
+    if not shared_stories_data:
+        print("No shared stories yet.")
+        return
+    print("\nShared Stories:\n")
+    for story_id, data in shared_stories_data.items():
+        print(f"Story ID: {story_id}")
+        print(f"Username: {data['username']}")
+        print(f"Story:\n{data['story']}")
+        print(f"Votes: {data['votes']}\n")
+
+# Function to vote for a story
+def vote_for_story():
+    view_shared_stories()
+    story_id = int(input("Enter the Story ID of the story you want to vote for: "))
+    if story_id in shared_stories_data:
+        shared_stories_data[story_id]["votes"] += 1
+        save_shared_stories_data(shared_stories_data)
+        print("Vote cast successfully!")
+    else:
+        print("Invalid Story ID.")
+
+# Function to view top-voted stories
+def view_top_voted_stories():
+    if not shared_stories_data:
+        print("No shared stories yet.")
+        return
+    sorted_stories = sorted(shared_stories_data.items(), key=lambda x: x[1]["votes"], reverse=True)
+    print("\nTop Voted Stories:\n")
+    for story_id, data in sorted_stories:
+        print(f"Story ID: {story_id}")
+        print(f"Username: {data['username']}")
+        print(f"Story:\n{data['story']}")
+        print(f"Votes: {data['votes']}\n")
+        if len(sorted_stories) == 5:
+            break  # Display top 5 stories
+
 # Main loop to allow multiple rounds
 def main():
     username = get_user_profile()
@@ -792,34 +858,36 @@ def main():
         elif choice == '9':
             display_help()
         elif choice == '10':
-            participate_in_challenge(username)
-        elif choice == '11':
-            vote_on_challenge(username)
-        elif choice == '12':
-            display_challenge_results()
-        elif choice == '13':
-            join_tournament(username)
-        elif choice == '14':
-            participate_in_tournament(username)
-        elif choice == '15':
-            vote_on_tournament_round(username)
-        elif choice == '16':
-            advance_tournament_round()
-        elif choice == '17':
-            start_tournament_round()
-        elif choice == '18':
             create_storybook(username)
-        elif choice == '19':
+        elif choice == '11':
             add_story_to_storybook(username)
-        elif choice == '20':
+        elif choice == '12':
             view_storybooks(username)
-        elif choice == '21':
+        elif choice == '13':
             delete_storybook(username)
-        elif choice == '22':
+        elif choice == '14':
             delete_story_from_storybook(username)
+        elif choice == '15':
+            share_story(username)
+        elif choice == '16':
+            view_shared_stories()
+        elif choice == '17':
+            rate_shared_story()
+        elif choice == '18':
+            comment_on_shared_story()
+        elif choice == '19':
+            participate_in_daily_challenge(username)
+        elif choice == '20':
+            view_daily_challenge_submissions()
+        elif choice == '21':
+            vote_for_story()
+        elif choice == '22':
+            view_top_voted_stories()
         elif choice == '23':
             print("Thanks for playing Mad Libs! Goodbye!")
             save_storybooks()
+            save_shared_stories()
+            save_daily_challenge_data()
             break
         else:
             print("Invalid choice. Please enter a number between 1 and 23.")
