@@ -4,6 +4,23 @@ import json
 import os
 import datetime
 
+daily_challenge_file = "daily_challenge.json"
+
+# Function to load daily challenge data
+def load_daily_challenge_data():
+    if os.path.exists(daily_challenge_file):
+        with open(daily_challenge_file, "r") as file:
+            return json.load(file)
+    return {"current_challenge": "", "submissions": []}
+
+# Function to save daily challenge data
+def save_daily_challenge_data(data):
+    with open(daily_challenge_file, "w") as file:
+        json.dump(data, file, indent=4)
+
+# Load daily challenge data
+daily_challenge_data = load_daily_challenge_data()
+
 daily_challenge_data = {
     "date": None,
     "template": None,
@@ -225,7 +242,9 @@ def display_menu():
     print("20. View Daily Challenge Submissions")
     print("21. Vote for a Story")
     print("22. View Top Voted Stories")
-    print("23. Exit")
+    print("23. Set Daily Challenge")
+    print("24. Clear Daily Challenge")
+    print("25. Exit")
 
 # Function to create a custom template
 def create_custom_template(username):
@@ -833,6 +852,53 @@ def view_top_voted_stories():
         if len(sorted_stories) == 5:
             break  # Display top 5 stories
 
+# Function to set the daily challenge
+def set_daily_challenge():
+    challenge_template = choose_template()
+    daily_challenge_data["current_challenge"] = challenge_template
+    daily_challenge_data["submissions"] = []
+    save_daily_challenge_data(daily_challenge_data)
+    print("Daily challenge set successfully!")
+
+# Function to view the daily challenge
+def view_daily_challenge():
+    challenge_template = daily_challenge_data["current_challenge"]
+    if challenge_template:
+        print("\nToday's Daily Challenge:")
+        print(challenge_template)
+    else:
+        print("No daily challenge set.")
+
+# Function to submit a story for the daily challenge
+def submit_daily_challenge_story(username):
+    challenge_template = daily_challenge_data["current_challenge"]
+    if not challenge_template:
+        print("No daily challenge set.")
+        return
+    inputs = get_inputs(challenge_template)
+    story = challenge_template.format(**inputs)
+    daily_challenge_data["submissions"].append({"username": username, "story": story})
+    save_daily_challenge_data(daily_challenge_data)
+    print("Story submitted successfully!")
+
+# Function to view daily challenge submissions
+def view_daily_challenge_submissions():
+    submissions = daily_challenge_data["submissions"]
+    if not submissions:
+        print("No submissions yet.")
+        return
+    print("\nDaily Challenge Submissions:\n")
+    for submission in submissions:
+        print(f"Username: {submission['username']}")
+        print(f"Story:\n{submission['story']}\n")
+
+# Function to clear daily challenge data
+def clear_daily_challenge():
+    daily_challenge_data["current_challenge"] = ""
+    daily_challenge_data["submissions"] = []
+    save_daily_challenge_data(daily_challenge_data)
+    print("Daily challenge cleared successfully!")
+
 # Main loop to allow multiple rounds
 def main():
     username = get_user_profile()
@@ -884,13 +950,17 @@ def main():
         elif choice == '22':
             view_top_voted_stories()
         elif choice == '23':
+            set_daily_challenge()
+        elif choice == '24':
+            clear_daily_challenge()
+        elif choice == '25':
             print("Thanks for playing Mad Libs! Goodbye!")
             save_storybooks()
             save_shared_stories()
             save_daily_challenge_data()
             break
         else:
-            print("Invalid choice. Please enter a number between 1 and 23.")
+            print("Invalid choice. Please enter a number between 1 and 25.")
 
 # Run the game
 if __name__ == "__main__":
